@@ -10,7 +10,6 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
-use Illuminate\Support\Facades\Log;
 
 class DocumentController extends Controller
 {
@@ -220,46 +219,40 @@ class DocumentController extends Controller
 }
 
  public function preview(Request $request, string $service, string $id)
-{
-    // Log pour déboguer
-    Log::info('Preview request', ['service' => $service, 'id' => $id]);
-    
-    $doc = Document::where('service_id', $service)
-                   ->where('id', $id)
-                   ->firstOrFail();
+    {
+        $doc = Document::where('service_id', $service)
+                       ->where('id', $id)
+                       ->firstOrFail();
 
-    $path = storage_path('app/' . $doc->file_path);
-    
-    // Vérifier et logger le chemin
-    Log::info('File path', ['path' => $path, 'exists' => file_exists($path)]);
+        $path = storage_path('app/' . $doc->file_path);
 
-    if (!file_exists($path)) {
-        Log::error('File not found', ['path' => $path]);
-        abort(404, 'Fichier introuvable: ' . $doc->file_path);
+        if (!file_exists($path)) {
+            abort(404, 'Fichier introuvable');
+        }
+
+        $mimeType = mime_content_type($path);
+        
+        // Types supportés pour la preview
+        $supportedTypes = [
+            'application/pdf',
+            'image/jpeg',
+            'image/jpg',
+            'image/png',
+            'image/gif',
+            'image/webp'
+        ];
+
+        if (!in_array($mimeType, $supportedTypes)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Type de fichier non supporté pour la preview. Téléchargez le fichier.'
+            ], 415);
+        }
+
+        // Retourner le fichier avec les bons headers pour l'afficher dans le navigateur
+        return response()->file($path, [
+            'Content-Type' => $mimeType,
+            'Content-Disposition' => 'inline; filename="' . $doc->title . '"'
+        ]);
     }
-
-    $mimeType = mime_content_type($path);
-    
-    $supportedTypes = [
-        'application/pdf',
-        'image/jpeg',
-        'image/jpg',
-        'image/png',
-        'image/gif',
-        'image/webp'
-    ];
-
-    if (!in_array($mimeType, $supportedTypes)) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Type de fichier non supporté pour la preview. Téléchargez le fichier.',
-            'mime_type' => $mimeType
-        ], 415);
-    }
-
-    return response()->file($path, [
-        'Content-Type' => $mimeType,
-        'Content-Disposition' => 'inline; filename="' . basename($doc->file_path) . '"'
-    ]);
-}
 }

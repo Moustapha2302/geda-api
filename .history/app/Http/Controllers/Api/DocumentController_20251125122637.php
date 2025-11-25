@@ -222,7 +222,7 @@ class DocumentController extends Controller
  public function preview(Request $request, string $service, string $id)
 {
     // Log pour déboguer
-    Log::info('Preview request', ['service' => $service, 'id' => $id]);
+    \Log::info('Preview request', ['service' => $service, 'id' => $id]);
     
     $doc = Document::where('service_id', $service)
                    ->where('id', $id)
@@ -231,10 +231,10 @@ class DocumentController extends Controller
     $path = storage_path('app/' . $doc->file_path);
     
     // Vérifier et logger le chemin
-    Log::info('File path', ['path' => $path, 'exists' => file_exists($path)]);
+    \Log::info('File path', ['path' => $path, 'exists' => file_exists($path)]);
 
     if (!file_exists($path)) {
-        Log::error('File not found', ['path' => $path]);
+        \Log::error('File not found', ['path' => $path]);
         abort(404, 'Fichier introuvable: ' . $doc->file_path);
     }
 

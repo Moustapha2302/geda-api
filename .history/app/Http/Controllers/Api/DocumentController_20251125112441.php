@@ -10,7 +10,6 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
-use Illuminate\Support\Facades\Log;
 
 class DocumentController extends Controller
 {
@@ -219,47 +218,25 @@ class DocumentController extends Controller
     ], 200);
 }
 
- public function preview(Request $request, string $service, string $id)
+public function preview(Request $request, string $service, string $id)
 {
-    // Log pour déboguer
-    Log::info('Preview request', ['service' => $service, 'id' => $id]);
-    
     $doc = Document::where('service_id', $service)
                    ->where('id', $id)
                    ->firstOrFail();
 
     $path = storage_path('app/' . $doc->file_path);
-    
-    // Vérifier et logger le chemin
-    Log::info('File path', ['path' => $path, 'exists' => file_exists($path)]);
 
     if (!file_exists($path)) {
-        Log::error('File not found', ['path' => $path]);
-        abort(404, 'Fichier introuvable: ' . $doc->file_path);
+        abort(404, 'Fichier introuvable');
     }
 
-    $mimeType = mime_content_type($path);
-    
-    $supportedTypes = [
-        'application/pdf',
-        'image/jpeg',
-        'image/jpg',
-        'image/png',
-        'image/gif',
-        'image/webp'
-    ];
+    // Détecter le MIME
+    $mime = mime_content_type($path);
 
-    if (!in_array($mimeType, $supportedTypes)) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Type de fichier non supporté pour la preview. Téléchargez le fichier.',
-            'mime_type' => $mimeType
-        ], 415);
-    }
-
+    // Stream sans télécopie (inline)
     return response()->file($path, [
-        'Content-Type' => $mimeType,
-        'Content-Disposition' => 'inline; filename="' . basename($doc->file_path) . '"'
+        'Content-Type'   => $mime,
+        'Content-Disposition' => 'inline; filename="' . $doc->title . '"'
     ]);
 }
 }

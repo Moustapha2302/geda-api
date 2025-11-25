@@ -55,5 +55,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('{service}/documents/{id}', [DocumentController::class, 'destroy']);
 
         Route::post('{service}/documents/{id}/sign', [SignatureController::class, 'sign']);
+     //->middleware('can:sign,service'); // ou $this->authorize('sign', $service) dans le controller
     });
 });

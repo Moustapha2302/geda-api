@@ -7,8 +7,6 @@ use App\Http\Controllers\Api\SearchController;
 use App\Http\Controllers\Api\TwoFAController;
 use App\Http\Controllers\Api\DocumentController;
 
-use App\Http\Controllers\Api\SignatureController;
-
 // ---------- 1. ROUTES PUBLIQUES ----------
 Route::post('/login', [AuthController::class, 'login']);
 
@@ -53,7 +51,5 @@ Route::middleware('auth:sanctum')->group(function () {
         // Modification et suppression
         Route::put('{service}/documents/{id}', [DocumentController::class, 'update']);
         Route::delete('{service}/documents/{id}', [DocumentController::class, 'destroy']);
-
-        Route::post('{service}/documents/{id}/sign', [SignatureController::class, 'sign']);
     });
 });
