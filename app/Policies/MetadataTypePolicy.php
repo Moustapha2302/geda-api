@@ -33,11 +33,13 @@ class MetadataTypePolicy
     return $user->service_id === $serviceId && $user->hasRole('chef_' . $serviceId);
 }
 
-    public function update(User $user, MetadataType $metadataType): bool
-    {
-        return $user->service_id === $metadataType->service_id && $user->hasRole('chef_' . $metadataType->service_id);
-    }
+    public function update(User $user, ?MetadataType $metadataType): bool
+{
+    if (! $metadataType) return false;
 
+    return (int) $user->service_id === (int) $metadataType->service_id
+           && $user->hasRole('chef_' . $metadataType->service_id);
+}
     public function delete(User $user, MetadataType $metadataType): bool
     {
         return $this->update($user, $metadataType);

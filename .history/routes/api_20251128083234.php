@@ -12,7 +12,6 @@ use App\Http\Controllers\Api\SignatureController;
 use App\Http\Controllers\Api\TransferController;
 use App\Http\Controllers\Api\MetadataTypeController;
 use App\Http\Controllers\Api\MetadataController;
-use App\Http\Controllers\Api\FileController;
 
 // ---------- 1. ROUTES PUBLIQUES ----------
 Route::post('/login', [AuthController::class, 'login']);

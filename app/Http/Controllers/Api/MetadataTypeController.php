@@ -53,16 +53,38 @@ class MetadataTypeController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
+public function update(Request $request, int $service, int $id)
+{
+    // 1. Récupérer le type du bon service
+    $type = MetadataType::where('service_id', $service)->findOrFail($id);
 
+    // 2. Policy
+    $this->authorize('update', $type);
+
+    // 3. Validation + mise à jour
+    $validated = $request->validate([
+        'name'   => 'sometimes|required|string|max:100|unique:metadata_types,name,'.$id.',id,service_id,'.$service,
+        'fields' => 'sometimes|required|array|min:1',
+        'fields.*.label'    => 'required|string|max:100',
+        'fields.*.type'     => 'required|in:text,number,date,select,checkbox',
+        'fields.*.required' => 'boolean',
+        'fields.*.order'    => 'integer|min:0',
+    ]);
+
+    $type->update($validated);
+
+    return $type;
+}
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
-    {
-        //
-    }
+   public function destroy(int $service, int $id)
+{
+    $type = MetadataType::where('service_id', $service)->findOrFail($id);
+    $this->authorize('delete', $type);
+
+    $type->delete();
+
+    return response()->noContent(); // 204 No Content
+}
 }

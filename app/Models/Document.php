@@ -111,4 +111,9 @@ class Document extends Model
     {
         return $this->ocr_status === 'processing';
     }
+
+    public function metadataValues()
+{
+    return $this->hasMany(MetadataValue::class);
+}
 }
