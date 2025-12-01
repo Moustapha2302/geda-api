@@ -8,6 +8,7 @@ use App\Jobs\ProcessOcr;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
+
 class CronController extends Controller
 {
     /**
@@ -217,4 +218,69 @@ class CronController extends Controller
             ], 500);
         }
     }
+
+        /**
+ * Batch nocturne : transfert automatique J+7
+ * POST {service}/cron/auto-transfer-j7
+ */
+public function autoTransferJ7()
+{
+    \Log::channel('cron')->info('autoTransferJ7 started');
+
+   $docs = Document::where('status', 'intermediate')
+    ->where('arrived_at', '<=', now()->subDays(7))
+    ->whereNull('moved_at')
+    ->get();
+    $count = 0;
+    foreach ($docs as $doc) {
+        $doc->update([
+            'status'   => 'final',
+            'moved_at' => now(),
+        ]);
+        $count++;
+    }
+
+    \Log::channel('cron')->info('autoTransferJ7 completed', ['count' => $count]);
+
+    return response()->json(['message' => 'Batch J+7 terminé', 'transferred' => $count]);
 }
+
+/**
+ * Alerte 6 mois avant la fin de conservation
+ * POST {service}/cron/alert-before-end
+ */
+public function alertBeforeEnd()
+{
+    \Log::channel('cron')->info('alertBeforeEnd started');
+
+    // Date butoir : 6 mois à partir de maintenant
+    $limit = now()->addMonths(6);
+
+    // Documents intermédiaires dont la conservation finit dans 6 mois
+    $docs = Document::where('status', 'in_review')   // ou la vraie valeur
+        ->where('created_at', '<=', $limit)          // à adapter avec la bonne colonne
+        ->whereNull('alerted_at')                    // éviter les doublons
+        ->get();
+
+    $count = 0;
+    foreach ($docs as $doc) {
+        // Log simple (plus tard : mail, notification, etc.)
+        \Log::channel('cron')->warning('Document à échéance 6 mois', [
+            'id' => $doc->id,
+            'title' => $doc->title,
+            'limit' => $limit->toDateString(),
+        ]);
+
+        // Marquer comme alerté
+        $doc->update(['alerted_at' => now()]);
+        $count++;
+    }
+
+    \Log::channel('cron')->info('alertBeforeEnd completed', ['count' => $count]);
+
+    return response()->json([
+        'message' => 'Alertes 6 mois envoyées',
+        'alerted' => $count,
+    ]);
+}
+    }

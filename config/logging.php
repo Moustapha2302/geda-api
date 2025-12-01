@@ -58,6 +58,20 @@ return [
             'ignore_exceptions' => false,
         ],
 
+        'audit' => [
+    'driver' => 'single',
+    'path' => storage_path('logs/audit.log'),
+    'level' => 'info'
+],
+
+
+    'cron' => [
+        'driver' => 'daily',
+        'path' => storage_path('logs/cron.log'),
+        'level' => env('LOG_LEVEL', 'debug'),
+        'days' => 14,
+    ],
+
         'single' => [
             'driver' => 'single',
             'path' => storage_path('logs/laravel.log'),

@@ -107,7 +107,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::prefix('{service}/transfers')->group(function () {
             Route::post('/', [TransferController::class, 'store']);
             Route::get('/', [TransferController::class, 'index']);
-            Route::get('incoming', [TransferController::class, 'incoming']);
             Route::get('{id}', [TransferController::class, 'show']);
             Route::post('{id}/accept', [TransferController::class, 'accept']);
             Route::post('{id}/reject', [TransferController::class, 'reject']);

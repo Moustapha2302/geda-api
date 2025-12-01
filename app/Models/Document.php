@@ -18,6 +18,8 @@ class Document extends Model
         'file_path',
         'md5',
         'status',
+        'arrived_at',
+        'moved_at',
         'ocr_text',
         'ocr_status',
         'ocr_processed_at',
@@ -27,6 +29,8 @@ class Document extends Model
 
     protected $casts = [
         'ocr_processed_at' => 'datetime',
+         'arrived_at' => 'datetime',
+         'moved_at' => 'datetime',
         'ocr_confidence' => 'decimal:2',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',

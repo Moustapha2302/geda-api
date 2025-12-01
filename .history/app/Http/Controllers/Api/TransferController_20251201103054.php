@@ -19,20 +19,18 @@ class TransferController extends Controller
      * Créer un nouveau transfert de document
      */
     public function store(Request $request, string $service)
-{
-    Log::debug('Transfer store START', [
-        'user_id' => $request->user()->id,
-        'requested_service' => $service,
-    ]);
+    {
+        Log::debug('Transfer store START', [
+            'user_id' => $request->user()->id,
+            'user_service' => $request->user()->service_id,
+            'user_role' => $request->user()->role,
+            'requested_service' => $service,
+        ]);
 
-    // ✅ Résoudre le service via slug OU id
-    $serviceModel = Service::where('slug', $service)
-                          ->orWhere('id', $service)
-                          ->firstOrFail();
-
-    $this->authorize('transfer', $serviceModel);
-
-
+        // ✅ Trouver le service par ID OU par slug
+        $serviceModel = Service::where('id', $service)
+                              ->orWhere('slug', $service)
+                              ->firstOrFail();
 
         Log::debug('Service found', [
             'service_id' => $serviceModel->id,
@@ -294,21 +292,4 @@ class TransferController extends Controller
             'message' => 'Lien de partage envoyé à ' . $validated['email']
         ], 200);
     }
-
-    public function incoming(Request $request, string $service)
-{
-    $serviceModel = Service::where('slug', $service)
-                          ->orWhere('id', $service)
-                          ->firstOrFail();
-
-    $transfers = Transfer::where('to_service_id', $serviceModel->id)
-                        ->with(['document', 'fromService', 'initiatedBy'])
-                        ->orderBy('created_at', 'desc')
-                        ->get();
-
-    return response()->json([
-        'success' => true,
-        'data' => $transfers,
-    ]);
-}
 }

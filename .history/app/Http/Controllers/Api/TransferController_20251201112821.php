@@ -294,21 +294,4 @@ class TransferController extends Controller
             'message' => 'Lien de partage envoyé à ' . $validated['email']
         ], 200);
     }
-
-    public function incoming(Request $request, string $service)
-{
-    $serviceModel = Service::where('slug', $service)
-                          ->orWhere('id', $service)
-                          ->firstOrFail();
-
-    $transfers = Transfer::where('to_service_id', $serviceModel->id)
-                        ->with(['document', 'fromService', 'initiatedBy'])
-                        ->orderBy('created_at', 'desc')
-                        ->get();
-
-    return response()->json([
-        'success' => true,
-        'data' => $transfers,
-    ]);
-}
 }
